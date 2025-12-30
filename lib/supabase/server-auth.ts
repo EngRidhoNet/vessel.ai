@@ -1,8 +1,7 @@
-// lib/supabase/server.ts
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-export function createSupabaseServer() {
+export function createSupabaseServerAuth() {
   const cookieStore = cookies()
 
   return createServerClient(
@@ -10,10 +9,15 @@ export function createSupabaseServer() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        async get(name: string) {
+        async get(name) {
           return (await cookieStore).get(name)?.value
         },
-        // ❌ JANGAN ADA set/remove DI SERVER COMPONENT
+        async set(name, value, options) {
+          (await cookieStore).set({ name, value, ...options })
+        },
+        async remove(name, options) {
+          (await cookieStore).set({ name, value: '', ...options })
+        },
       },
     }
   )
